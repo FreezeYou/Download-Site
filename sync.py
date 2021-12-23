@@ -5,9 +5,16 @@ import urllib.parse
 import requests
 import wget
 
+if os.path.exists("syncing.lock"):
+    print("另一个同步正在进行")
+    exit()
+
+os.mknod("syncing.lock")
+
 dataJson = requests.get("https://api.github.com/repos/FreezeYou/FreezeYou/releases").json()
 
 print("正在同步...")
+
 for releaseData in dataJson:
     fileName: str = urllib.parse.unquote(releaseData["name"])
     downloadUrl: str = urllib.parse.unquote(releaseData["assets"][0]["browser_download_url"])
@@ -20,5 +27,7 @@ for releaseData in dataJson:
             print("已存在的：" + fileName + ".apk")
     else:
         print("\r\n同步 " + str(fileName) + " 失败")
+
+os.remove("syncing.lock")
 
 print("同步完成")
